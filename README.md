@@ -34,10 +34,15 @@ Quickstart
 3. Use:
 
    ```python
+   import os
    from llama_index.digitalocean.embeddings import DigitalOceanEmbeddings
    from llama_index.core import VectorStoreIndex, Document
 
-   embed_model = DigitalOceanEmbeddings(model="text-embedding-3-small")
+   # Read your token however you like (for example from an env var) and
+   # pass it explicitly to the embedding class:
+   token = os.environ["DIGITALOCEAN_TOKEN"]
+
+   embed_model = DigitalOceanEmbeddings(model="text-embedding-3-small", api_token=token)
    docs = [Document(text="Hello from DigitalOcean")]
    index = VectorStoreIndex.from_documents(docs, embed_model=embed_model)
    print(index.as_query_engine().query("What was the greeting?"))

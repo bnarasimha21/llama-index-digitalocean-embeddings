@@ -1,5 +1,4 @@
 import asyncio
-import os
 import time
 from typing import Iterable, List, Optional
 
@@ -35,16 +34,13 @@ class DigitalOceanEmbeddings(BaseEmbedding):
         backoff_factor: float = 1.0,
     ) -> None:
         # Prefer the Gradient/DigitalOcean model access key; fall back to legacy token for compatibility.
-        self.api_token = (
-            model_access_key
-            or os.getenv("GRADIENT_MODEL_ACCESS_KEY")
-            or api_token
-            or os.getenv("DIGITALOCEAN_TOKEN")
-        )
+        # Users must explicitly provide a token; this library does not read
+        # environment variables to avoid hidden configuration.
+        self.api_token = model_access_key or api_token
         if not self.api_token:
             raise ValueError(
-                "Gradient model access key is required. Set GRADIENT_MODEL_ACCESS_KEY "
-                "or pass model_access_key/api_token."
+                "An API token is required. Pass api_token or model_access_key explicitly; "
+                "environment variables are not read by this library."
             )
 
         self.model = model
@@ -122,4 +118,5 @@ class DigitalOceanEmbeddings(BaseEmbedding):
         # Use a thread to reuse the sync HTTP implementation without adding
         # an additional async HTTP dependency.
         return await asyncio.to_thread(self._fetch_embeddings, list(inputs))
+
 

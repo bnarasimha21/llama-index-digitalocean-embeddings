@@ -1,7 +1,7 @@
 import asyncio
-from llama_index.embeddings.digitalocean import DigitalOceanEmbeddings
+from llama_index.digitalocean.embeddings import DigitalOceanEmbeddings
 
-embed = DigitalOceanEmbeddings(model="text-embedding-3-small")
+embed = DigitalOceanEmbeddings(model="text-embedding-3-small", api_token="dummy-token")
 
 # Sync
 vec = embed.get_text_embedding("hello")
