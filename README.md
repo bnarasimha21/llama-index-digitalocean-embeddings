@@ -9,17 +9,32 @@ Quickstart
 1. Install:
 
    ```
-   pip install -e .
+   pip install llama-index-digitalocean-embeddings
    ```
 
 2. Set environment variable:
 
    - `DIGITALOCEAN_TOKEN`: DigitalOcean Personal Access Token with AI access.
 
+   -  ### Getting a DigitalOcean token
+
+      Your `DIGITALOCEAN_TOKEN` is a Personal Access Token you create in the DigitalOcean Control Panel:
+
+      a. Log in to `https://cloud.digitalocean.com`.
+      b. Go to **Settings → API → Personal Access Tokens**.
+      c. Click **Generate New Token**, choose the scopes you need (for embeddings, typically **CRUD** for GenAI and read for project), give the token a name, and click **Generate**.
+      d. Copy the token and set it in your shell:
+
+        ```bash
+        export DIGITALOCEAN_TOKEN=your_token_here
+        ```
+
+      For more detailed, step‑by‑step guidance, see the [official DigitalOcean documentation](https://docs.digitalocean.com/reference/api/create-personal-access-token/).
+
 3. Use:
 
    ```python
-   from llama_index.embeddings.digitalocean import DigitalOceanEmbeddings
+   from llama_index.digitalocean.embeddings import DigitalOceanEmbeddings
    from llama_index.core import VectorStoreIndex, Document
 
    embed_model = DigitalOceanEmbeddings(model="text-embedding-3-small")
@@ -32,67 +47,7 @@ Configuration
 -------------
 
 - `model`: Embedding model name (e.g., `text-embedding-3-small`, `text-embedding-3-large`).
-- `api_token`: Overrides `GRADIENT_MODEL_ACCESS_KEY` / `DIGITALOCEAN_TOKEN`.
-- `model_access_key`: Preferred parameter name; same behavior as `api_token`.
-
-Authentication resolution order:
-
-1. `model_access_key` argument
-2. `GRADIENT_MODEL_ACCESS_KEY` environment variable
-3. `api_token` argument
-4. `DIGITALOCEAN_TOKEN` environment variable
-
-How it works (GenAI Embeddings REST API)
-----------------------------------------
-
-`DigitalOceanEmbeddings` does **not** use the Gradient SDK for embeddings. Instead, it calls the
-DigitalOcean GenAI embeddings REST endpoint directly:
-
-`POST https://api.digitalocean.com/v2/gen-ai/embeddings`
-
-with a JSON body of the form:
-
-```json
-{
-  "model": "text-embedding-3-small",
-  "input": [
-    "Hello, world!",
-    "What is AI?"
-  ]
-}
-```
-
-The Python implementation in this package mirrors the official guidance from DigitalOcean: it uses a
-bearer token, posts to `/v2/gen-ai/embeddings`, and reads the vectors from `data[*].embedding` in
-the response.
-
-Example: direct `curl` call
----------------------------
-
-If you want to experiment with the raw API outside of LlamaIndex:
-
-```bash
-curl -X POST "https://api.digitalocean.com/v2/gen-ai/embeddings" \
-  -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-        "model": "text-embedding-3-small",
-        "input": [
-          "Hello, world!",
-          "What is AI?"
-        ]
-      }'
-```
-
-You can then store the returned vectors in a vector-capable database (e.g., PostgreSQL + pgvector,
-Milvus, etc.), or just let LlamaIndex manage that via its vector stores as shown in the Quickstart.
-
-Notes
------
-
-- Handles auth via bearer token.
-- Includes simple retries/backoff for transient HTTP errors (e.g., 429/5xx).
-- See `tests/` for mocked examples.
+- `api_token`: `DIGITALOCEAN_TOKEN`.
 
 License
 -------
