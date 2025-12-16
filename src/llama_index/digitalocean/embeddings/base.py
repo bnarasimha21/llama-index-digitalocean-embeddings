@@ -24,20 +24,22 @@ class DigitalOceanEmbeddings(BaseEmbedding):
         
         # Users must explicitly provide a token; this library does not read
         # environment variables to avoid hidden configuration.
-        self.api_token = model_access_key or api_token
-        if not self.api_token:
+        api_token_value = model_access_key or api_token
+        if not api_token_value:
             raise ValueError(
                 "An API token is required. Pass api_token or model_access_key explicitly; "
                 "environment variables are not read by this library."
             )
 
-        self.model = model
-        self.base_url = "https://api.digitalocean.com/v2/gen-ai/embeddings"
-        self.timeout = timeout
-        self.max_retries = max_retries
-        self.backoff_factor = backoff_factor
+        # Use private attributes to avoid Pydantic validation issues
+        self._model = model
+        self._api_token = api_token_value
+        self._base_url = "https://api.digitalocean.com/v2/gen-ai/embeddings"
+        self._timeout = timeout
+        self._max_retries = max_retries
+        self._backoff_factor = backoff_factor
         self._headers = {
-            "Authorization": f"Bearer {self.api_token}",
+            "Authorization": f"Bearer {self._api_token}",
             "Content-Type": "application/json",
         }
 
@@ -61,7 +63,7 @@ class DigitalOceanEmbeddings(BaseEmbedding):
     def _fetch_embeddings(self, inputs: List[str]) -> List[List[float]]:
         """Fetch embeddings from DigitalOcean API with retry logic."""
         payload = {
-            "model": self.model,
+            "model": self._model,
             "input": inputs,
         }
 
@@ -69,28 +71,28 @@ class DigitalOceanEmbeddings(BaseEmbedding):
         while True:
             try:
                 resp = requests.post(
-                    self.base_url,
+                    self._base_url,
                     headers=self._headers,
                     json=payload,
-                    timeout=self.timeout,
+                    timeout=self._timeout,
                 )
 
                 # Retry on transient HTTP errors
                 if (
                     resp.status_code in {429, 500, 502, 503, 504}
-                    and retries < self.max_retries
+                    and retries < self._max_retries
                 ):
                     retries += 1
-                    time.sleep(self.backoff_factor * retries)
+                    time.sleep(self._backoff_factor * retries)
                     continue
 
                 resp.raise_for_status()
                 data = resp.json()
                 return [item["embedding"] for item in data.get("data", [])]
             except requests.RequestException:
-                if retries < self.max_retries:
+                if retries < self._max_retries:
                     retries += 1
-                    time.sleep(self.backoff_factor * retries)
+                    time.sleep(self._backoff_factor * retries)
                     continue
                 raise
 
