@@ -1,14 +1,20 @@
 import asyncio
 import time
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 import requests
 
 from llama_index.core.embeddings import BaseEmbedding
+from llama_index.core.bridge.pydantic import PrivateAttr
 
 
 class DigitalOceanEmbeddings(BaseEmbedding):
     """LlamaIndex embedding model backed by DigitalOcean GenAI embeddings REST API."""
+
+    _model: str = PrivateAttr()
+    _api_token: str = PrivateAttr()
+    _base_url: str = PrivateAttr()
+    _headers: Dict[str, str] = PrivateAttr()
 
     def __init__(
         self,
@@ -16,8 +22,6 @@ class DigitalOceanEmbeddings(BaseEmbedding):
         api_token: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
-        
         # Users must explicitly provide a token; this library does not read
         if not api_token:
             raise ValueError(
@@ -25,7 +29,13 @@ class DigitalOceanEmbeddings(BaseEmbedding):
                 "environment variables are not read by this library."
             )
 
-        # Use private attributes to avoid Pydantic validation issues
+        # Set model_name for BaseEmbedding
+        if "model_name" not in kwargs:
+            kwargs["model_name"] = model
+
+        super().__init__(**kwargs)
+
+        # Set private attributes after super().__init__()
         self._model = model
         self._api_token = api_token
         self._base_url = "https://api.digitalocean.com/v2/gen-ai/embeddings"
