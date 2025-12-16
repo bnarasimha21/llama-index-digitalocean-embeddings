@@ -2,8 +2,8 @@
  requires = ["setuptools>=68", "wheel"]
  build-backend = "setuptools.build_meta"
 
- [project]
- name = "llama-index-embeddings-digitalocean"
+[project]
+name = "llama-index-digitalocean-embeddings"
  version = "0.1.0"
  description = "DigitalOcean AI embeddings integration for LlamaIndex."
  readme = "README.md"
@@ -16,9 +16,9 @@
  ]
  keywords = ["llama-index", "embeddings", "digitalocean", "ai"]
 
- [project.urls]
- Homepage = "https://github.com/llama-index-embeddings-digitalocean"
- Issues = "https://github.com/llama-index-embeddings-digitalocean/issues"
+[project.urls]
+Homepage = "https://github.com/llama-index-digitalocean-embeddings"
+Issues = "https://github.com/llama-index-digitalocean-embeddings/issues"
 
  [tool.setuptools.packages.find]
  where = ["src"]
